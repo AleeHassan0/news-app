@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:news_app/constants/constant_color.dart';
+import 'package:news_app/models/categories_news_model.dart';
 import 'package:news_app/models/news_headlines_model.dart';
+import 'package:news_app/view/categories_screen.dart';
 import 'package:news_app/view_model/news_view_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 enum FilterList { bbcNews, abcnews, aryNews, aljazeera, argaam, cnn }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // NewsViewModel newsHeadlinesModel = NewsViewModel();
+  NewsViewModel newsHeadlinesModel = NewsViewModel();
   FilterList? selectedMenu;
 
   final formate = DateFormat('dd MMMM,yyyy');
@@ -31,7 +34,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CategoriesScreen()));
+            },
             icon: Image.asset(
               'images/category_icon.png',
               height: 25,
@@ -100,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: SpinKitThreeInOut(
-                        color: Colors.orange,
+                        color: Constant.kColor,
                       ),
                     );
                   } else {
@@ -121,13 +129,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: width,
                                 padding: EdgeInsets.symmetric(
                                     horizontal: width * 0.02),
+
+                                ///ClipRRect is often used to create rounded corners for images,
+                                /// but it can be applied to any widget.
+                                /// Hide parts of a widget that extend beyond a specific area.
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
+
+                                  ///cachednetwork purpose: Images are stored locally after being downloaded once.
                                   child: CachedNetworkImage(
                                     imageUrl: snapshot
                                         .data!.articles![index].urlToImage
                                         .toString(),
                                     fit: BoxFit.cover,
+
+                                    ///placeholder purpose: provide a visual indication while an image is being loaded from the network
+                                    ///preventing empty spaces or blank areas on the screen during loading.
                                     placeholder: (context, url) => Container(
                                       child: spinkit1,
                                     ),
@@ -183,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       .articles![index].author
                                                       .toString(),
                                                   style: GoogleFonts.poppins(
-                                                      color: Colors.blue,
+                                                      color: Constant.kColor,
                                                       fontWeight:
                                                           FontWeight.w500),
                                                   maxLines: 2,
@@ -214,7 +231,111 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                 }),
-          )
+          ),
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: FutureBuilder<CategoriesNewsModel>(
+                future: NewsViewModel.fetchNewsCategoires('General'),
+                builder: (BuildContext context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: SpinKitThreeInOut(
+                        color: Constant.kColor,
+                      ),
+                    );
+                  } else {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      itemCount: snapshot.data!.articles?.length,
+                      itemBuilder: (context, index) {
+                        DateTime dateTime = DateTime.parse(snapshot
+                            .data!.articles![index].publishedAt
+                            .toString());
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              ///ClipRRect is often used to create rounded corners for images,
+                              /// but it can be applied to any widget.
+                              /// Hide parts of a widget that extend beyond a specific area.
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+
+                                ///cachednetwork purpose: Images are stored locally after being downloaded once.
+                                child: CachedNetworkImage(
+                                  height: height * 0.1,
+                                  width: width * 0.3,
+                                  imageUrl: snapshot
+                                      .data!.articles![index].urlToImage
+                                      .toString(),
+                                  fit: BoxFit.cover,
+
+                                  ///placeholder purpose: provide a visual indication while an image is being loaded from the network
+                                  ///preventing empty spaces or blank areas on the screen during loading.
+                                  placeholder: (context, url) => Container(
+                                    child: spinkit1,
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                  child: Container(
+                                height: height * 0.1,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        snapshot.data!.articles![index].title
+                                            .toString(),
+                                        maxLines: 1,
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 15,
+                                            color: Colors.black54),
+                                      ),
+                                      // const Spacer(),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            snapshot.data!.articles![index]
+                                                .source!.name
+                                                .toString(),
+                                            maxLines: 1,
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 15,
+                                                color: Constant.kColor),
+                                          ),
+                                          Text(
+                                            formate.format(dateTime),
+                                            maxLines: 1,
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 15,
+                                                color: Colors.black54),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              )),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }
+                }),
+          ),
         ],
       ),
     );
@@ -222,5 +343,5 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 const spinkit1 = SpinKitThreeInOut(
-  color: Colors.orange,
+  color: Constant.kColor,
 );

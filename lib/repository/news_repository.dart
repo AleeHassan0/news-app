@@ -10,7 +10,7 @@ class NewsRepository {
   ///future function es ly create kya k hmy nhi pta k data kitni daar main fetch hoga
   Future<NewsHeadlinesModel> fetchNewsHeadlinesApi(String channelName) async {
     String url =
-        'https://newsapi.org/v2/top-headlines?sources=bbc-news&apiKey=3b14097ccab246e2b04996cb7ad59054';
+        'https://newsapi.org/v2/top-headlines?sources=${channelName}&apiKey=3b14097ccab246e2b04996cb7ad59054';
 
     ///http package api sy any waly data ko backend pr controll krta ha
     final response = await http.get(Uri.parse(url));
@@ -29,7 +29,7 @@ class NewsRepository {
 
   Future<CategoriesNewsModel> fetchNewsCategoires(String category) async {
     String newsUrl =
-        'https://newsapi.org/v2/everything?q=$category&apiKey=8a5ec37e26f845dcb4c2b78463734448';
+        'https://newsapi.org/v2/everything?q=$category&apiKey=3b14097ccab246e2b04996cb7ad59054';
     final response = await http.get(Uri.parse(newsUrl));
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
